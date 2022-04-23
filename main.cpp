@@ -1,6 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QDebug>
+#include <QObject>
+#include <QString>
+#include <qqml.h>
 
 // User libraries
 #include "space.cpp"
@@ -55,6 +57,15 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;
+
+//    QList<QObject *> dataList = {
+//        new SpaceQt("Item 1", "red"),
+//        new SpaceQt("Item 2", "green"),
+//        new SpaceQt("Item 3", "blue"),
+//        new SpaceQt("Item 4", "yellow")
+//    };
+    // Space::QSeating sit;
+    // Space::QDimensions dim;
 
     std::vector<Space::Space> randomSpaces = GetRandomizedSpaces(20);
     for (Space::Space space: randomSpaces) {
