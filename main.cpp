@@ -5,7 +5,7 @@
 #include <qqml.h>
 
 // User libraries
-#include "space.cpp"
+#include "qspace.cpp"
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <iostream>
@@ -58,22 +58,14 @@ int main(int argc, char *argv[])
     if (engine.rootObjects().isEmpty())
         return -1;
 
-//    QList<QObject *> dataList = {
-//        new SpaceQt("Item 1", "red"),
-//        new SpaceQt("Item 2", "green"),
-//        new SpaceQt("Item 3", "blue"),
-//        new SpaceQt("Item 4", "yellow")
-//    };
-    // Space::QSeating sit;
-    // Space::QDimensions dim;
-
     std::vector<Space::Space> randomSpaces = GetRandomizedSpaces(20);
     for (Space::Space space: randomSpaces) {
-        std::cout << "ID: " << space.GetID() << "\nName: " << space.GetName() << "\nArea: " << space.dims.GetArea() << " m^2" << std::endl;
-        for (std::string i: space.GetReviews()) {
-            std::cout << i << std::endl;
+        Space::QSpace qspace(space);
+        std::cout << "ID: " << qspace.GetID() << "\nName: " << qspace.GetName().toStdString() << "\nArea: " << qspace.m_dims->GetArea() << " m^2" << std::endl;
+        for (QString i: qspace.GetReviews()) {
+            std::cout << i.toStdString() << std::endl;
         }
-        std::cout << "Review: " << space.GetReviewScore() << std::endl << std::endl;
+        std::cout << "Review score: " << qspace.GetReviewScore() << std::endl << std::endl;
     }
     return app.exec();
 }
