@@ -31,7 +31,7 @@ ApplicationWindow {
                     text: "Item " + (index + 1)
                     width: parent.width
                     onClicked: {
-                        stack.push("Item" + (index + 1) + "Form.ui.qml")
+                        stack.push("Item.qml", {current_index: index})
                     }
                 }
             }

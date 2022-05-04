@@ -4,5 +4,7 @@
         <file>qtquickcontrols2.conf</file>
         <file>Item1Form.ui.qml</file>
         <file>Item3Form.ui.qml</file>
+        <file>Item.qml</file>
+        <file>ItemForm.ui.qml</file>
     </qresource>
 </RCC>
