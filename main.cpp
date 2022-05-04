@@ -5,44 +5,49 @@
 #include <qqml.h>
 
 // User libraries
-#include "qspace.cpp"
+#include "space.h"
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <iostream>
 #include <vector>
 #include <string>
 
-std::vector<Space::Space> GetRandomizedSpaces(int n){
-    std::vector<Space::Space> returnObjects;
+QVector<space::Space*> GetRandomizedSpaces(int n){
+    QVector<space::Space*> returnObjects;
     std::srand(time(NULL));
     for (int i = 0; i < n; i++) {
         returnObjects.push_back(
-            Space::Space(
+            new space::Space{
                 i,                                      // ID
-                "Space" + std::to_string(i),           // name
-                Space::Dimensions(
-                    rand() % 90 + 10,                   // length
-                    rand() % 45 + 5,                    // width
-                    rand() % 10 + 2                     // height
-                ),
-                Space::Seating(
-                    rand() % 490 + 10,                  // number of seats
-                    (bool)(rand() % 2),                 // slanted?
-                    (bool)(rand() % 2),                 // surround?
-                    (bool)(rand() % 2)                  // comfy?
-                ),
+                QString::fromStdString("Space"          // name
+                    + std::to_string(i)),
+
+                                                        // For dimensions
+                rand() % 90 + 10,                       // length
+                rand() % 45 + 5,                        // width
+                rand() % 10 + 2,                        // height
+
                 rand() % 990 + 10,                      // number of people
+
+                                                        // For seats
+                rand() % 490 + 10,                      // number of seats
+                (bool)(rand() % 2),                     // slanted?
+                (bool)(rand() % 2),                     // surround?
+                (bool)(rand() % 2),                     // comfy?
+
+                                                        // For timer
                 rand() % 9900 + 100,                    // price
+
                 (bool)(rand() % 2),                     // outdoor?
                 (bool)(rand() % 2),                     // catering?
                 (bool)(rand() % 2),                     // naturalLight?
                 (bool)(rand() % 2),                     // sound?
                 (bool)(rand() % 2),                     // projector?
                 (bool)(rand() % 2)                      // camera?
-            )
+            }
         );
-        returnObjects.back().AddReview("Very bad, not good", rand() % 5);
-        returnObjects.back().AddReview("Okay ish", rand() % 5);
+        returnObjects.back()->AddReview("Very bad, not good", rand() % 5);
+        returnObjects.back()->AddReview("Okay ish", rand() % 5);
     }
     return returnObjects;
 }
@@ -58,14 +63,13 @@ int main(int argc, char *argv[])
     if (engine.rootObjects().isEmpty())
         return -1;
 
-    std::vector<Space::Space> randomSpaces = GetRandomizedSpaces(20);
-    for (Space::Space space: randomSpaces) {
-        Space::QSpace qspace(space);
-        std::cout << "ID: " << qspace.GetID() << "\nName: " << qspace.GetName().toStdString() << "\nArea: " << qspace.m_dims->GetArea() << " m^2" << std::endl;
-        for (QString i: qspace.GetReviews()) {
+    QVector<space::Space*> randomSpaces = GetRandomizedSpaces(20);
+    for (auto space_ptr = randomSpaces.begin(); space_ptr != randomSpaces.end(); space_ptr++) {
+        std::cout << "ID: " << (*space_ptr)->GetID() << "\nName: " << (*space_ptr)->GetName().toStdString() << "\nArea: " << (*space_ptr)->m_dims->GetArea() << " m^2" << std::endl;
+        for (QString i: (*space_ptr)->GetReviews()) {
             std::cout << i.toStdString() << std::endl;
         }
-        std::cout << "Review score: " << qspace.GetReviewScore() << std::endl << std::endl;
+        std::cout << "Review score: " << (*space_ptr)->GetReviewScore() << std::endl << std::endl;
     }
     return app.exec();
 }
