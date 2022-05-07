@@ -41,13 +41,14 @@ QVector<space::Space*> GetRandomizedSpaces(int n){
                 (bool)(rand() % 2),                     // outdoor?
                 (bool)(rand() % 2),                     // catering?
                 (bool)(rand() % 2),                     // naturalLight?
+                (bool)(rand() % 2),                     // artificialLight?
                 (bool)(rand() % 2),                     // sound?
                 (bool)(rand() % 2),                     // projector?
                 (bool)(rand() % 2)                      // camera?
             }
         );
-        returnObjects.back()->AddReview("Very bad, not good", rand() % 5);
-        returnObjects.back()->AddReview("Okay ish", rand() % 5);
+        returnObjects.back()->GetReview().AddReview("Very bad, not good", rand() % 5);
+        returnObjects.back()->GetReview().AddReview("Okay ish", rand() % 5);
     }
     return returnObjects;
 }
@@ -65,11 +66,11 @@ int main(int argc, char *argv[])
 
     QVector<space::Space*> randomSpaces = GetRandomizedSpaces(20);
     for (auto space_ptr = randomSpaces.begin(); space_ptr != randomSpaces.end(); space_ptr++) {
-        std::cout << "ID: " << (*space_ptr)->GetID() << "\nName: " << (*space_ptr)->GetName().toStdString() << "\nArea: " << (*space_ptr)->m_dims->GetArea() << " m^2" << std::endl;
-        for (QString i: (*space_ptr)->GetReviews()) {
+        std::cout << "ID: " << (*space_ptr)->GetID() << "\nName: " << (*space_ptr)->GetName().toStdString() << "\nArea: " << (*space_ptr)->GetDims().GetArea() << " m^2" << std::endl;
+        for (QString i: (*space_ptr)->GetReview().GetReviews()) {
             std::cout << i.toStdString() << std::endl;
         }
-        std::cout << "Review score: " << (*space_ptr)->GetReviewScore() << std::endl << std::endl;
+        std::cout << "Review score: " << (*space_ptr)->GetReview().GetReviewScore() << std::endl << std::endl;
     }
     return app.exec();
 }

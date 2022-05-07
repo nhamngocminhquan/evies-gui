@@ -6,5 +6,6 @@
         <file>Item3Form.ui.qml</file>
         <file>Item.qml</file>
         <file>ItemForm.ui.qml</file>
+        <file>TextBanner.qml</file>
     </qresource>
 </RCC>

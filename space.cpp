@@ -105,11 +105,11 @@ namespace space {
     Time::Time(double p_dirhamsPerHour, QObject *parent) : QObject(parent) {
         originTime = time(NULL);
         // Round up to next hour
-        originTime += (86400 - originTime % 86400);
+        originTime += (3600 - originTime % 3600);
         dirhamsPerHour = p_dirhamsPerHour;
     }
     Time::Time(double p_dirhamsPerHour, const time_t& p_originTime, QObject *parent) : QObject(parent) {
-        originTime = p_originTime + (86400 - p_originTime % 86400);
+        originTime = p_originTime + (3600 - p_originTime % 3600);
         dirhamsPerHour = p_dirhamsPerHour;
     }
     // Setters

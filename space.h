@@ -134,8 +134,50 @@ namespace space {
         Q_INVOKABLE bool RemoveReservation(const time_t& p_startTime, const time_t& p_endTime);
     };
 
+    // Class for reviews
+    class Review: public QObject {
+        Q_OBJECT
+        Q_PROPERTY(float score READ GetReviewScore NOTIFY ScoreChanged)
+        Q_PROPERTY(unsigned int numberOfReviews READ GetNumberOfReviews NOTIFY NumberOfReviewsChanged)
+        Q_PROPERTY(bool reviewed READ IsReviewed NOTIFY ReviewedChanged)
+        Q_PROPERTY(QVector<QString> reviews READ GetReviews NOTIFY ReviewsChanged)
+    signals:
+        void ScoreChanged();
+        void NumberOfReviewsChanged();
+        void ReviewedChanged();
+        void ReviewsChanged();
+    private:
+        // .. Constrained to 0 to 5
+        float score = 0;
+        unsigned int numberOfReviews = 0;
+        bool reviewed = false;
+        QVector<QString> reviews;
+    public:
+        // Constructors & destructors
+        explicit Review(float p_score = 0, QObject* parent = nullptr) : QObject(parent) {
+            score = p_score;
+        }
+        virtual ~Review() {}
+
+        // Setters
+        // Add a review
+        Q_INVOKABLE void AddReview(const QString& p_review, float p_score) {
+            reviewed = true;
+            reviews.push_back(p_review);
+            score = (score * numberOfReviews + p_score) / (++numberOfReviews);
+            emit ReviewsChanged();
+            emit ReviewedChanged();
+        }
+
+        // Getters
+        float GetReviewScore() const { return score; }
+        QVector<QString> GetReviews() const { return reviews; }
+        unsigned int GetNumberOfReviews() const { return numberOfReviews; }
+        bool IsReviewed() const { return reviewed; }
+    };
+
     // Class for each discrete space
-    class Space : public QObject{
+    class Space : public QObject {
         Q_OBJECT
         Q_PROPERTY(unsigned int ID READ GetID WRITE SetID NOTIFY IDChanged)
         Q_PROPERTY(QString name READ GetName WRITE Rename NOTIFY NameChanged)
@@ -148,15 +190,12 @@ namespace space {
         Q_PROPERTY(bool sound READ IsSound WRITE IsSound NOTIFY SoundChanged)
         Q_PROPERTY(bool cameras READ IsCameras WRITE IsCameras NOTIFY CamerasChanged)
         // Q_PROPERTY(double dirhamsPerHour READ GetDirhamsPerHour WRITE SetDirhamsPerHour NOTIFY DirhamsPerHourChanged)
-        Q_PROPERTY(float score READ GetReviewScore NOTIFY ScoreChanged)
-        Q_PROPERTY(unsigned int numberOfReviews READ GetNumberOfReviews NOTIFY NumberOfReviewsChanged)
-        Q_PROPERTY(bool reviewed READ IsReviewed NOTIFY ReviewedChanged)
-        Q_PROPERTY(QVector<QString> reviews READ GetReviews NOTIFY ReviewsChanged)
         // Q_PROPERTY(QVector<QString> tags READ GetTags NOTIFY TagsChanged)
 
         Q_PROPERTY(Dimensions* dims MEMBER m_dims NOTIFY DimsChanged)
         Q_PROPERTY(Seating* seats MEMBER m_seats NOTIFY SeatsChanged)
         Q_PROPERTY(Time* timer MEMBER m_timer NOTIFY TimerChanged)
+        Q_PROPERTY(Review* review MEMBER m_review NOTIFY ReviewChanged)
     signals:
         void IDChanged();
         void NameChanged();
@@ -169,23 +208,21 @@ namespace space {
         void SoundChanged();
         void CamerasChanged();
         void DirhamsPerHourChanged();
-        void ScoreChanged();
-        void NumberOfReviewsChanged();
-        void ReviewedChanged();
-        void ReviewsChanged();
         void TagsChanged();
+
         void DimsChanged();
         void SeatsChanged();
         void TimerChanged();
+        void ReviewChanged();
     private:
         unsigned int ID;
         QString name;
-        // Dimensions* dims;
+        Dimensions* m_dims;
 
         // Event-specific characteristics
         // .. Accomodation
         unsigned int numberOfPeople = 0;
-        // Seating* seats;
+        Seating* m_seats;
         bool outdoor = false;
         bool catering = false;
 
@@ -201,22 +238,20 @@ namespace space {
 
         // .. Available times
         double dirhamsPerHour;
-        // Time* timer;
+        Time* m_timer;
 
         // For reviews
         // .. Constrained to 0 to 5
-        float score = 0;
-        unsigned int numberOfReviews = 0;
-        bool reviewed = false;
-        QVector<QString> reviews;
+        Review* m_review;
 
         // Miscellaneous tags
         QVector<QString> tags;
     public:
         // Needs to be pointers as QML takes ownership
-        Dimensions* m_dims;
-        Seating* m_seats;
-        Time* m_timer;
+//        Dimensions* m_dims;
+//        Seating* m_seats;
+//        Time* m_timer;
+//        Review* m_review;
         // Constructors & destructors
         Space(QObject *parent = nullptr) : QObject(parent) {
             m_dims = nullptr;
@@ -246,7 +281,6 @@ namespace space {
             bool p_projector = true,
             bool p_sound = true,
             bool p_cameras = true,
-            float p_score = 0,
             QObject *parent = nullptr) : QObject(parent) {
 
             // Manual work
@@ -266,11 +300,11 @@ namespace space {
             projector = p_projector;
             sound = p_sound;
             cameras = p_cameras;
-            score = p_score;
 
             m_dims = new Dimensions(p_length, p_width, p_height);
             m_seats = new Seating(p_numberOfSeats, p_slanted, p_surround, p_comfy);
             m_timer = new Time(dirhamsPerHour);
+            m_review = new Review();
         }
         // Destructor
         virtual ~Space() {
@@ -287,13 +321,6 @@ namespace space {
         void SetID(unsigned int p_ID) {
             ID = p_ID;
             emit IDChanged();
-        }
-        Q_INVOKABLE void AddReview(const QString& p_review, float p_score) {
-            reviewed = true;
-            reviews.push_back(p_review);
-            score = (score * numberOfReviews + p_score) / (++numberOfReviews);
-            emit ReviewsChanged();
-            emit ReviewedChanged();
         }
         void SetNumberOfPeople(int p_numberOfPeople) {
             numberOfPeople = p_numberOfPeople;
@@ -333,9 +360,6 @@ namespace space {
         QString GetName() const { return name; }
         unsigned int GetID() const { return ID; }
         int GetNumberOfPeople() const { return numberOfPeople; }
-        float GetReviewScore() const { return score; }
-        QVector<QString> GetReviews() const { return reviews; }
-        unsigned int GetNumberOfReviews() const { return numberOfReviews; }
         bool IsOutdoor() const { return outdoor; }
         bool IsCatering() const { return catering; }
         bool IsNaturalLight() const { return naturalLight; }
@@ -343,7 +367,11 @@ namespace space {
         bool IsProjector() const { return projector; }
         bool IsSound() const { return sound; }
         bool IsCameras() const { return cameras; }
-        bool IsReviewed() const { return reviewed; }
+
+        Dimensions& GetDims() const { return *m_dims; }
+        Seating& GetSeats() const { return *m_seats; }
+        Time& GetTimer() const { return *m_timer; }
+        Review& GetReview() const { return *m_review; }
     };
 
     // Class to manage spaces
@@ -386,13 +414,14 @@ namespace space {
                         (bool)(rand() % 2),                     // outdoor?
                         (bool)(rand() % 2),                     // catering?
                         (bool)(rand() % 2),                     // naturalLight?
+                        (bool)(rand() % 2),                     // artificialLight?
                         (bool)(rand() % 2),                     // sound?
                         (bool)(rand() % 2),                     // projector?
                         (bool)(rand() % 2)                      // camera?
                     }
                 );
-                spaces.back()->AddReview("Very bad, not good", rand() % 5);
-                spaces.back()->AddReview("Okay ish", rand() % 5);
+                spaces.back()->GetReview().AddReview("Very bad, not good", rand() % 5);
+                spaces.back()->GetReview().AddReview("Okay ish", rand() % 5);
             }
         }
     };

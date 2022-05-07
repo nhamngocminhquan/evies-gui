@@ -7,14 +7,16 @@ Page {
     height: 400
 
     title: qsTr("Item " + current_index)
+    // Export de_button & de_label
+    property alias popButton: popButton
+    property alias label: label
 
     Label {
+        id: label
         text: qsTr("You are on Item " + (current_index + 1) + ".")
         anchors.centerIn: parent
     }
 
-    // Export de_button
-    property alias popButton: popButton
     Button {
         id: popButton
         width: 60
